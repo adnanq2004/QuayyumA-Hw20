@@ -13,19 +13,19 @@
 int server_handshake(int *to_client) {
   printf("server startup...\n");
   int from_client = 0;
-  mkfifo("wkpipe", 0666);
+  mkfifo(WKP, 0666);
   printf("server: made a well known pipe\n");
-  from_client = open("wkpipe", O_RDONLY);
+  from_client = open(WKP, O_RDONLY);
   char line[100];
   read(from_client, line, 100);
   printf("server: got client's secret pipe name; %s\n", line);
-  remove("wkpipe");
+  remove(WKP);
   *to_client = open(line, O_WRONLY);
-  strcpy(line, "abcde");
+  strcpy(line, ACK);
   write(*to_client, line, 5);
   printf("server: sent %s to client", line);
   read(from_client, line, 5);
-  if (!strcmp(line, "ABCDE")) {
+  if (!strcmp(line, "hola")) {
     printf("connection secured");
   }
   return from_client;
@@ -62,7 +62,7 @@ int client_handshake(int *to_server) {
   printf("client: received %s from server\n", line2);
   int i;
   for (i = 0; i < strlen(line2); i++) {
-    line2[i] += 32;
+    line2[i] -= 32;
   }
   write(*to_server, line2, 5);
   printf("client: sent %s in response to server\n", line2);
